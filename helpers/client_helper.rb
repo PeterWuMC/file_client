@@ -28,7 +28,7 @@ def files_version
 end
 
 def update_files_version
-  File.open(config_full_path("version", 'w'){|f| f.write(files_version.to_yaml)}
+  File.open(config_full_path("version"), 'w'){|f| f.write(files_version.to_yaml)}
 end
 
 
