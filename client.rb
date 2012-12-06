@@ -37,18 +37,23 @@ def initialize_files
   # ####### Assuming client will not change the file
   # check server file and local, assuming the previous scan would have updated the server
   all_files = FileServer::File.all
-  server_files_hash = Hash[*all_files.map{|f| [f.path, DateTime.parse(f.last_update)]}.flatten]
+  # server_files_hash = Hash[*all_files.map{|f| [f.path, DateTime.parse(f.last_update)]}.flatten]
 
-  server_files_hash.each do |path, last_update|
+  all_files.each do |file|
+    last_update = DateTime.parse(file.last_update)
+    path        = file.path
     if files_version[path] && files_version[path]["server_last_update"] == last_update
       # do nothing
-    elsif files_version[path] && files_version[path]["server_last_update"] < last_update
+    elsif !files_version[path] || (files_version[path] && files_version[path]["server_last_update"] < last_update)
       # download and replace client file from server
+      download_file(file)
       # update the files config with latest server_last_update date from server
+      files_version[path] = {}
+      files_version[path]["server_last_update"] = last_update
+      update_files_version
     else
       raise "Your config seems to be inconsistent with the server"
     end
-
   end
 
   # if files_version == server_files_hash
