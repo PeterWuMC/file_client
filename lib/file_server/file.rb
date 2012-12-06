@@ -23,6 +23,7 @@ module FileServer
         self.download(true)
         # update the files config with latest server_last_update date from server
         ConfigManager.update_files_version(path, "server_last_update", last_update)
+        ConfigManager.update_files_version(path, "client_last_update", last_update)
       else
         raise "Your config seems to be inconsistent with the server"
       end
@@ -32,6 +33,8 @@ module FileServer
       File.all.each do |file|
         file.check
       end
+      ConfigManager.save_files_version
+
     end
 
   end # end of class File

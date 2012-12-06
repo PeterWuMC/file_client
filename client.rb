@@ -48,6 +48,7 @@ def check_server_file path
     end
   rescue ActiveResource::ResourceNotFound
     # file not on server
+    # other client deleted the files from server?
   end
 end
 

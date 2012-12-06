@@ -20,7 +20,6 @@ class ConfigManager
   def self.update_files_version path, field, value
     files_version[path] = {} if !files_version[path]
     files_version[path][field] = value
-    self.save_files_version
   end
 
   def self.save_files_version
