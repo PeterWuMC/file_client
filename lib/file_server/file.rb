@@ -1,11 +1,17 @@
 module FileServer
 
   class File < ReactiveResource::Base
+    require 'file_manager'
 
     self.format = :json
     self.site = "http://localhost:1234/"
     self.primary_key = :path
 
-  end
+
+    def download
+      FileManager.write_to_file self.path, self.get(:download)["file_content"]
+    end
+
+  end # end of class File
 
 end
