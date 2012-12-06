@@ -9,8 +9,8 @@ module FileServer
     self.primary_key = :path
 
 
-    def download
-      FileManager.write_to_file self.path, self.get(:download)["file_content"]
+    def download overwrite=false
+      FileManager.write_to_client_file self.path, self.get(:download)["file_content"], overwrite
     end
 
   end # end of class File

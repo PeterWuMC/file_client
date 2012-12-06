@@ -1,5 +1,5 @@
 class ConfigManager
-
+  require 'file_manager'
 
   # PATH
   # - server last update
@@ -16,10 +16,14 @@ class ConfigManager
     YAML.load(File.read(config_full_path(file_name))) || {}
   end
 
+  def self.update_files_version path, field, value
+    files_version[path] = {} if !files_version[path]
+    files_version[path][field] = value
+    self.save_files_version
+  end
 
-
-  def self.update_files_version
-    File.open(config_full_path("version"), 'w'){|f| f.write(files_version.to_yaml)}
+  def self.save_files_version
+    FileManager.write_to_file(config_full_path("version"), files_version.to_yaml, true)
   end
 
   def self.config_full_path file_name

@@ -46,11 +46,9 @@ def initialize_files
       # do nothing
     elsif !ConfigManager.files_version[path] || (ConfigManager.files_version[path] && ConfigManager.files_version[path]["server_last_update"] < last_update)
       # download and replace client file from server
-      file.download
+      file.download(true)
       # update the files config with latest server_last_update date from server
-      ConfigManager.files_version[path] = {}
-      ConfigManager.files_version[path]["server_last_update"] = last_update
-      ConfigManager.update_files_version
+      ConfigManager.update_files_version(path, "server_last_update", last_update)
     else
       raise "Your config seems to be inconsistent with the server"
     end
