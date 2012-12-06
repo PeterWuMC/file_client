@@ -1,6 +1,6 @@
-module FileServer
+module Files
 
-  class File < ReactiveResource::Base
+  class ServerFile < ReactiveResource::Base
     require 'file_manager'
     require 'config_manager'
 

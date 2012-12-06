@@ -1,7 +1,7 @@
 $:.unshift File.join(Dir.pwd, 'lib')
 
 require 'listen'
-require 'file_server'
+require 'files'
 require 'base64'
 require 'yaml'
 require 'config_manager'
@@ -34,13 +34,13 @@ def initialize_files
   # end
   # ####### Assuming client will not change the file
   # check server file and local, assuming the previous scan would have updated the server
-  FileServer::File.check_all
+  Files::ServerFile.check_all
 end
 
 
 def check_server_file path
   begin
-    server_file = FireServer::File.find(path)
+    server_file = Files::ServerFile.find(path)
     if server_file["last_update"] == ConfigManager.files_version[path]["server_last_update"]
       # your record is correct
     else

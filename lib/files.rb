@@ -1,3 +1,3 @@
 require 'reactive_resource'
 
-require 'file_server/file'
+require 'files/server_file'
