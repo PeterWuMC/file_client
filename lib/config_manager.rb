@@ -13,6 +13,7 @@ class ConfigManager
   end
 
   def self.load_config_file file_name
+    return {} if !File.exists?(config_full_path(file_name))
     YAML.load(File.read(config_full_path(file_name))) || {}
   end
 

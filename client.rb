@@ -34,25 +34,7 @@ def initialize_files
   # end
   # ####### Assuming client will not change the file
   # check server file and local, assuming the previous scan would have updated the server
-
-
-
-
-
-  FileServer::File.all.each do |file|
-    last_update = DateTime.parse(file.last_update)
-    path        = file.path
-    if ConfigManager.files_version[path] && ConfigManager.files_version[path]["server_last_update"] == last_update
-      # do nothing
-    elsif !ConfigManager.files_version[path] || (ConfigManager.files_version[path] && ConfigManager.files_version[path]["server_last_update"] < last_update)
-      # download and replace client file from server
-      file.download(true)
-      # update the files config with latest server_last_update date from server
-      ConfigManager.update_files_version(path, "server_last_update", last_update)
-    else
-      raise "Your config seems to be inconsistent with the server"
-    end
-  end
+  FileServer::File.check_all
 end
 
 
