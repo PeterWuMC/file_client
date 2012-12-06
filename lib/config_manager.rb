@@ -26,10 +26,10 @@ class ConfigManager
     File.join(Dir.pwd, "config/#{file_name}.yml")
   end
 
-  def self.client_path
-    client_folder = config["client_folder"]
-    raise "application is not initialized, please do all necessart setup" unless client_folder
+  def self.get data
+    data = config[data.to_s]
+    raise "application is not initialized, please do all necessary setup" unless data
 
-    client_folder
+    data
   end
 end

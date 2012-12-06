@@ -2,9 +2,10 @@ module FileServer
 
   class File < ReactiveResource::Base
     require 'file_manager'
+    require 'config_manager'
 
     self.format = :json
-    self.site = "http://localhost:1234/"
+    self.site = ConfigManager.get(:server_path)
     self.primary_key = :path
 
 
