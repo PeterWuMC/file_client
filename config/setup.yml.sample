@@ -1,0 +1,2 @@
+client_folder: "<where you want your local directory to sync"
+server_path:   "<what is your server url>"
