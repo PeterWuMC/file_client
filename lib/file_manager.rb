@@ -1,13 +1,14 @@
 class FileManager
   require 'config_manager'
+  require 'base64'
 
   def self.write_to(target, path, file_content, attr={})
     path = get_file_full_path(target, path)
 
-    raise "File already exists: #{path}" if File.exists?(path) && !attr[:overwrite]
+    raise "File already exists: #{path}" if exists?(path, false) && !attr[:overwrite]
 
     write_file(path, attr[:base64] ? Base64.decode64(file_content) : file_content)
-    puts "downloaded: #{path}"
+    # puts "downloaded: #{path}"
     return path
   end
 
@@ -20,16 +21,21 @@ class FileManager
     attr[:base64] ? Base64.encode64(file_content) : file_content
   end
 
-  def self.exists?(target, path)
+  def self.exists?(target, path, raise_exception=true)
     path = get_file_full_path(target, path)
 
-    raise "File not found: #{path}" if File.exists?(path)
+    if File.exists?(path)
+      return true
+    else
+      raise "File not found: #{path}" if raise_exception
+      return false
+    end
   end
 
-  def last_update(target, path)
+  def self.last_update(target, path)
     path = get_file_full_path(target, path)
 
-    exists? path
+    exists? target, path
 
     DateTime.parse(File.mtime(path).to_s)
   end
@@ -44,7 +50,7 @@ class FileManager
     def self.create_folders_for path
       path = File.dirname(path)
 
-      return if File.directory?(path)
+      return if File.directory?(path) || ["/", "."].include?(path)
       create_folders_for(path)
       Dir::mkdir(path)
     end
