@@ -5,11 +5,11 @@ module Files
     attr_reader :path
 
     def initialize path
-      @path      = path
+      @path = path
     end
 
     def last_update
-      FileManager.last_update(:client, @full_path)
+      FileManager.last_update(:client, @path)
     end
 
     def file_content

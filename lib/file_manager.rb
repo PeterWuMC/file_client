@@ -13,9 +13,9 @@ class FileManager
   end
 
   def self.read_from(target, path, attr={})
-    path = get_file_full_path(target, path)
-
     exists? target, path
+
+    path = get_file_full_path(target, path)
 
     file_content = File.read(path)
     attr[:base64] ? Base64.encode64(file_content) : file_content
@@ -33,9 +33,9 @@ class FileManager
   end
 
   def self.last_update(target, path)
-    path = get_file_full_path(target, path)
-
     exists? target, path
+
+    path = get_file_full_path(target, path)
 
     DateTime.parse(File.mtime(path).to_s)
   end
