@@ -2,6 +2,10 @@ require 'spec_helper'
 require 'config_manager'
 
 describe ConfigManager do
+  before(:each) do
+    Object.send(:remove_const, :ConfigManager)
+    load 'config_manager.rb'
+  end
 
   context 'config_full_path' do
 
@@ -104,9 +108,6 @@ describe ConfigManager do
   context 'files_version' do
 
     before(:each) do
-      Object.send(:remove_const, :ConfigManager)
-      load 'config_manager.rb'
-
       ConfigManager.should_receive(:load_config_file).once.with("version").and_return({"a.rb" => {"test" => "value"}})
     end
 
