@@ -2,4 +2,8 @@ source :rubygems
 
 gem 'reactive_resource'
 gem 'listen'
-gem 'yaml'
+
+gem 'rspec'
+gem 'guard'
+gem 'guard-rspec'
+gem 'rb-fsevent', '~> 0.9.1'
