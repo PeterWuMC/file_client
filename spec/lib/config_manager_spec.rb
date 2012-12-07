@@ -106,20 +106,16 @@ describe ConfigManager do
     before(:each) do
       Object.send(:remove_const, :ConfigManager)
       load 'config_manager.rb'
+
+      ConfigManager.should_receive(:load_config_file).once.with("version").and_return({"a.rb" => {"test" => "value"}})
     end
 
     it 'should return config if it was not previously loaded' do
-      ConfigManager.should_receive(:load_config_file).once.with("version").and_return({"a.rb" => {"test" => "value"}})
-
       ConfigManager.files_version.should == {"a.rb" => {"test" => "value"}}
     end
 
     it 'should return the files_version that is in the internet if its already initialised' do
-      ConfigManager.should_receive(:load_config_file).twice.with("version").and_return({"a.rb" => {"test" => "value"}})
-
-      puts ConfigManager.files_version
       ConfigManager.update_files_version("a.rb", "test", "helloooooo")
-
 
       ConfigManager.files_version.should == {"a.rb" => {"test" => "helloooooo"}}
     end
