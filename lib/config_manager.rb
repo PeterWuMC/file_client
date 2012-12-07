@@ -23,7 +23,7 @@ class ConfigManager
   end
 
   def self.save_files_version
-    FileManager.write_to_file(config_full_path("version"), files_version.to_yaml, true)
+    FileManager.write_to(:full, config_full_path("version"), files_version.to_yaml, overwrite: true)
   end
 
   def self.config_full_path file_name

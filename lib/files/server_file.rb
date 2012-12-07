@@ -1,8 +1,6 @@
 module Files
 
   class ServerFile < ReactiveResource::Base
-    require 'file_manager'
-    require 'config_manager'
 
     self.format = :json
     self.site = ConfigManager.get(:server_path)
@@ -10,7 +8,7 @@ module Files
 
 
     def download overwrite=false
-      FileManager.write_to_client_file self.path, self.get(:download)["file_content"], overwrite
+      FileManager.write_to(:client, self.path, self.get(:download)["file_content"], {overwrite: true, base64: true})
     end
 
     def check
@@ -21,22 +19,24 @@ module Files
       elsif !ConfigManager.files_version[path] || (ConfigManager.files_version[path] && ConfigManager.files_version[path]["server_last_update"] < last_update)
         # download and replace client file from server
         self.download(true)
+
+        local_file = Files::LocalFile.find(self.path)
         # update the files config with latest server_last_update date from server
         ConfigManager.update_files_version(path, "server_last_update", last_update)
-        ConfigManager.update_files_version(path, "client_last_update", last_update)
+        ConfigManager.update_files_version(path, "client_last_update", local_file.last_update)
       else
         raise "Your config seems to be inconsistent with the server"
       end
     end
 
     def self.check_all
-      File.all.each do |file|
+      self.all.each do |file|
         file.check
       end
       ConfigManager.save_files_version
 
     end
 
-  end # end of class File
+  end # end of class ServerFile
 
 end
