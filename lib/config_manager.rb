@@ -5,16 +5,16 @@ class ConfigManager
   # - server last update
   # - client last update
   def self.files_version
-    @@files_version ||= load_config_file("version")
+    @@files_version ||= self.load_config_file("version")
   end
 
   def self.config
-    @@config        ||= load_config_file("setup")
+    @@config        ||= self.load_config_file("setup")
   end
 
   def self.load_config_file file_name
-    return {} if !File.exists?(config_full_path(file_name))
-    YAML.load(File.read(config_full_path(file_name))) || {}
+    return {} if !FileManager.exists?(:full, config_full_path(file_name), false)
+    YAML.load(FileManager.read_from(:full, config_full_path(file_name))) || {}
   end
 
   def self.update_files_version path, field, value
@@ -30,9 +30,9 @@ class ConfigManager
     File.join(Dir.pwd, "config/#{file_name}.yml")
   end
 
-  def self.get data
+  def self.get_config data
     data = config[data.to_s]
-    raise "application is not initialized, please do all necessary setup" unless data
+    raise "Application is not initialized, please do all necessary setup" unless data
 
     data
   end

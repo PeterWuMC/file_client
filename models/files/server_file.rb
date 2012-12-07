@@ -3,7 +3,7 @@ module Files
   class ServerFile < ReactiveResource::Base
 
     self.format = :json
-    self.site = ConfigManager.get(:server_path)
+    self.site = ConfigManager.get_config(:server_path)
     self.primary_key = :path
 
 

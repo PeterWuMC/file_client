@@ -44,13 +44,13 @@ describe FileManager do
   context 'get_file_full_path' do
 
     it 'should append the client base folder if the target is client' do
-      ConfigManager.should_receive(:get).once.with(:client_folder).and_return("/a/b/c")
+      ConfigManager.should_receive(:get_config).once.with(:client_folder).and_return("/a/b/c")
 
       FileManager.get_file_full_path(:client, "d.rb").should == "/a/b/c/d.rb"
     end
 
     it 'should return the same path if the target is not client' do
-      ConfigManager.should_not_receive(:get)
+      ConfigManager.should_not_receive(:get_config)
 
       FileManager.get_file_full_path(:full, "d.rb").should == "d.rb"
     end

@@ -5,7 +5,7 @@ class FileManager
   def self.write_to(target, path, file_content, attr={})
     path = get_file_full_path(target, path)
 
-    raise "File already exists: #{path}" if exists?(path, false) && !attr[:overwrite]
+    raise "File already exists: #{path}" if exists?(target, path, false) && !attr[:overwrite]
 
     write_file(path, attr[:base64] ? Base64.decode64(file_content) : file_content)
     # puts "downloaded: #{path}"
@@ -15,7 +15,7 @@ class FileManager
   def self.read_from(target, path, attr={})
     path = get_file_full_path(target, path)
 
-    exists? path
+    exists? target, path
 
     file_content = File.read(path)
     attr[:base64] ? Base64.encode64(file_content) : file_content
@@ -44,7 +44,7 @@ class FileManager
   private
 
     def self.get_file_full_path target, path
-      target.to_s == "client" ? File.join(ConfigManager.get(:client_folder), path) : path
+      target.to_s == "client" ? File.join(ConfigManager.get_config(:client_folder), path) : path
     end
 
     def self.create_folders_for path
