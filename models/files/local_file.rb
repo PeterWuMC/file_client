@@ -1,6 +1,6 @@
 module Files
 
-	class LocalFile
+  class LocalFile
 
     attr_reader :path
 
