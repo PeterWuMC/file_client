@@ -17,9 +17,7 @@ module Files
     end
 
     def self.find path
-      FileManager.exists? :client, path
-
-      self.new(path)
+      FileManager.exists?(:client, path, false) ? self.new(path) : false
     end
 
   end
