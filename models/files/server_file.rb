@@ -4,12 +4,8 @@ module Files
 
     self.format = :json
     self.site = ConfigManager.get_config(:server_path)
-    self.primary_key = :path
+    self.primary_key = :key
 
-
-    def self.find(path)
-      super(path.is_a?(Symbol) ? path : path.to_s.gsub!(" ", "%20"))
-    end
 
     def download overwrite=false
       FileManager.write_to(:client, self.path, self.get(:download)["file_content"], {overwrite: true, base64: true})
