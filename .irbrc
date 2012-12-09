@@ -2,4 +2,6 @@
 $:.unshift File.join(Dir.pwd, 'lib')
 $:.unshift File.join(Dir.pwd, 'models')
 
+require 'bundler'
+
 Bundler.require

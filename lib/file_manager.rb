@@ -40,6 +40,12 @@ class FileManager
     DateTime.parse(File.mtime(path).to_s)
   end
 
+  def self.all_files(target, path="")
+    path = get_file_full_path(target, path)
+
+    Dir["#{path}/**/*"].select{|v| File.file?(v)}.map{|v| v.gsub!(/^#{path}\//, "")}
+  end
+
 
   private
 
