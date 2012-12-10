@@ -8,7 +8,7 @@ require 'yaml'
 require 'config_manager'
 
 
-def condition server_file, local_File
+def condition server_file, local_file
   file_version = ConfigManager.files_version[server_file.path]
   return_value = {}
 
@@ -24,20 +24,25 @@ def check_date_time date_time1, date_time2
   return -1
 end
 
-def check server_file
 
-  local_File = Files::LocalFile.find(server_file.path)
-
-  if ConfigManager.files_version[path]
-    # if the files version exists
-    #        | nothing | download to local | upload to server | conflict | download to local |
+def check(key, exists)
+  #         | 1 | delete from version | download to local | upload to server | conflict | upload to server* | delete from server* | never |
+  # ---------------------------------------------------------------------------------------------------------------------------------------
+  # server  | T | F                   | T                 | F                | T        | F                 | T                   | F     |
+  # local   | T | F                   | F                 | T                | T        | T                 | F                   | F     |
+  # version | T | T                   | F                 | F                | F        | T                 | T                   | F     |
+  if exists[:server] && exists[:local] && exists[:version]
+    #      1 | nothing | download to local | upload to server | conflict | download to local |
     # ----------------------------------------------------------------------------------------
-    # local  | match   | match             | greater          | greater  | less*             |
     # server | match   | greater           | match            | greater  | less*             |
-    condition_values = condition(server_file, local_file)
+    # local  | match   | match             | greater          | greater  | less*             |
+    local_file  = Files::LocalFile.find(key)
+    server_file = Files::ServerFile.find(key)
+
+    condition_values = condition(server_file, server_key)
 
     if condition_values[:server] == 0 && condition_values[:local] == 0
-      # does nothing
+      # do nothing
     elsif condition_values[:server] == 1 && condition_values[:local] == 0
       server_file.download
     elsif condition_values[:server] == 0 && condition_values[:local] == 1
@@ -46,24 +51,36 @@ def check server_file
       # conflict
     else
       server_file.download
-    end 
+    end
+  elsif !exists[:server] && !exists[:local] && exists[:version]
+    # delete from version
+  elsif exists[:server] && !exists[:local] && !exists[:version]
+    # download to local
+  elsif !exists[:server] && exists[:local] && !exists[:version]
+    # upload to server
+  elsif exists[:server] && exists[:local] && !exists[:version]
+    # conflict
+  elsif !exists[:server] && exists[:local] && exists[:version]
+    #       | delete | upload to server | delete |
+    # --------------------------------------------
+    # local | match  | greater          | less   |
+  elsif exists[:server] && !exists[:local] && exists[:version]
+    #        | delete | download to local | delete |
+    # ----------------------------------------------
+    # server | match  | greater           | less   |
   else
-    # if the file does not exists on the files version
-    #        | upload to server | conflict | download to local | never |
-    # ------------------------------------------------------------------
-    # local  | Y                | Y        | N                 | N     |
-    # server | N                | Y        | Y                 | N     |
-    if server_file && local_file
-      # conflict
-    end 
+    # NEVER WOULD HAVE HAPPENED
   end
+end
 
 
-  path        = server_file.path
+
+
+def old_check server_file
   key         = server_file.key
-  if ConfigManager.files_version[path] && ConfigManager.files_version[path]["server_last_update"] == server_files.last_update
+  if ConfigManager.files_version[key] && ConfigManager.files_version[key]["server_last_update"] == server_files.last_update
     # do nothing
-  elsif !ConfigManager.files_version[path] || (ConfigManager.files_version[path] && ConfigManager.files_version[path]["server_last_update"] < server_file.last_update)
+  elsif !ConfigManager.files_version[key] || (ConfigManager.files_version[key] && ConfigManager.files_version[key]["server_last_update"] < server_file.last_update)
     # download and replace client file from server
     server_file.download(true)
 
@@ -78,7 +95,7 @@ end
 
 def check_all
   Files::ServerFile.all.each do |file|
-    check file
+    old_check file
   end
   ConfigManager.save_files_version
 end
