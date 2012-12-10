@@ -60,14 +60,17 @@ def check server_file
 
 
   path        = server_file.path
+  key         = server_file.key
   if ConfigManager.files_version[path] && ConfigManager.files_version[path]["server_last_update"] == server_files.last_update
     # do nothing
   elsif !ConfigManager.files_version[path] || (ConfigManager.files_version[path] && ConfigManager.files_version[path]["server_last_update"] < server_file.last_update)
     # download and replace client file from server
     server_file.download(true)
+
+    local_file = Files::LocalFile.find(server_file.key)
     # update the files config with latest server_last_update date from server
-    ConfigManager.update_files_version(path, "server_last_update", server_file.last_update)
-    ConfigManager.update_files_version(path, "local_last_update", local_file.last_update)
+    ConfigManager.update_files_version(key, "server_last_update", server_file.last_update)
+    ConfigManager.update_files_version(key, "local_last_update", local_file.last_update)
   else
     raise "Your config seems to be inconsistent with the server"
   end
