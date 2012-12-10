@@ -19,13 +19,13 @@ module Files
 
     def self.find key
       path = Base64.strict_decode64 key
-      FileManager.exists?(:client, path, false) ? self.new(path, key) : false
+      FileManager.exists?(:client, path, false) ? new(path, key) : false
     rescue
       false
     end
 
     def self.all
-      FileManager.all_files(:client).map {|path| self.new(path, Base64.strict_encode64(path))}
+      FileManager.all_files(:client).map {|path| new(path, Base64.strict_encode64(path))}
     end
 
   end
