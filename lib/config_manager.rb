@@ -17,9 +17,9 @@ class ConfigManager
     YAML.load(FileManager.read_from(:full, config_full_path(file_name))) || {}
   end
 
-  def self.update_files_version path, field, value
-    files_version[path] = {} if !files_version[path]
-    files_version[path][field] = value
+  def self.update_files_version key, field, value
+    files_version[key] = {} if !files_version[key]
+    files_version[key][field] = value
   end
 
   def self.save_files_version
