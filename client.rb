@@ -8,36 +8,77 @@ require 'yaml'
 require 'config_manager'
 
 
+def condition server_file, local_File
+  file_version = ConfigManager.files_version[server_file.path]
+  return_value = {}
 
+  return_value[:server] = check_date_time server_file.last_update, file_version["server_last_update"]
+  return_value[:local]  = check_date_time local_file.last_update, file_version["local_last_update"]
 
-def initialize_this
-
-  initialize_files
-
-  # monitor_files
+  return_value
 end
 
-
-# check if we need to download / replace files
-def initialize_files
-  # do a scan on current client folder
-  # client_files = Hash[*Dir["#{client_path}/**/*"].select{|v| File.file?(v)}.map{|v| [v.gsub(/^#{client_path}/, ""), File.mtime(v)]}.flatten]
-  # client_files.each do |path, last_update|
-  #   if ConfigManager.files_version[path] && ConfigManager.files_version[path]["client_last_update"] >= last_update
-  #     # consistent data between the client directory and the config
-  #   elsif ConfigManager.files_version[path] && ConfigManager.files_version[path]["client_last_update"] < last_update
-  #     # there are new changes of the file, check with server and upload
-  #     # @@jobs_queue.push "upload to server"
-  #   else
-  #     # new file, check with server and upload
-  #     # @@jobs_queue.push "upload to server"
-  #   end
-  # end
-  # ####### Assuming client will not change the file
-  # check server file and local, assuming the previous scan would have updated the server
-  Files::ServerFile.check_all
+def check_date_time date_time1, date_time2
+  return 0 if date_time1 == date_time2
+  return 1 if date_time1 >  date_time2
+  return -1
 end
 
+def check server_file
+
+  local_File = Files::LocalFile.find(server_file.path)
+
+  if ConfigManager.files_version[path]
+    # if the files version exists
+    #        | nothing | download to local | upload to server | conflict | download to local |
+    # ----------------------------------------------------------------------------------------
+    # local  | match   | match             | greater          | greater  | less*             |
+    # server | match   | greater           | match            | greater  | less*             |
+    condition_values = condition(server_file, local_file)
+
+    if condition_values[:server] == 0 && condition_values[:local] == 0
+      # does nothing
+    elsif condition_values[:server] == 1 && condition_values[:local] == 0
+      server_file.download
+    elsif condition_values[:server] == 0 && condition_values[:local] == 1
+      # upload to server
+    elsif condition_values[:server] == 1 && condition_values[:local] == 1
+      # conflict
+    else
+      server_file.download
+    end 
+  else
+    # if the file does not exists on the files version
+    #        | upload to server | conflict | download to local | never |
+    # ------------------------------------------------------------------
+    # local  | Y                | Y        | N                 | N     |
+    # server | N                | Y        | Y                 | N     |
+    if server_file && local_file
+      # conflict
+    end 
+  end
+
+
+  path        = server_file.path
+  if ConfigManager.files_version[path] && ConfigManager.files_version[path]["server_last_update"] == server_files.last_update
+    # do nothing
+  elsif !ConfigManager.files_version[path] || (ConfigManager.files_version[path] && ConfigManager.files_version[path]["server_last_update"] < server_file.last_update)
+    # download and replace client file from server
+    server_file.download(true)
+    # update the files config with latest server_last_update date from server
+    ConfigManager.update_files_version(path, "server_last_update", server_file.last_update)
+    ConfigManager.update_files_version(path, "local_last_update", local_file.last_update)
+  else
+    raise "Your config seems to be inconsistent with the server"
+  end
+end
+
+def check_all
+  Files::ServerFile.all.each do |file|
+    check file
+  end
+  ConfigManager.save_files_version
+end
 
 def check_server_file path
   begin
@@ -52,8 +93,6 @@ def check_server_file path
     # other client deleted the files from server?
   end
 end
-
-
 
 def monitor_files
   Thread.start do
@@ -73,5 +112,5 @@ def monitor_files
   end
 end
 
-initialize_this
+check_all
 
