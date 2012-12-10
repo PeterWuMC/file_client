@@ -25,7 +25,7 @@ module Files
     end
 
     def self.all
-      FileManager.all_files(:client).map {|path| self.new(path)}
+      FileManager.all_files(:client).map {|path| self.new(path, Base64.strict_encode64(path))}
     end
 
   end
