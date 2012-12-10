@@ -3,31 +3,31 @@ class FileManager
   require 'base64'
 
   def self.write_to(target, path, file_content, attr={})
-    path = get_file_full_path(target, path)
+    full_path = get_file_full_path(target, path)
 
-    raise "File already exists: #{path}" if exists?(target, path, false) && !attr[:overwrite]
+    raise "File already exists: #{full_path}" if exists?(target, full_path, false) && !attr[:overwrite]
 
-    write_file(path, attr[:base64] ? Base64.decode64(file_content) : file_content)
-    # puts "downloaded: #{path}"
-    return path
+    write_file(full_path, attr[:base64] ? Base64.decode64(file_content) : file_content)
+    # puts "downloaded: #{full_path}"
+    return full_path
   end
 
   def self.read_from(target, path, attr={})
     exists? target, path
 
-    path = get_file_full_path(target, path)
+    full_path = get_file_full_path(target, path)
 
-    file_content = File.read(path)
+    file_content = File.read(full_path)
     attr[:base64] ? Base64.encode64(file_content) : file_content
   end
 
   def self.exists?(target, path, raise_exception=true)
-    path = get_file_full_path(target, path)
+    full_path = get_file_full_path(target, path)
 
-    if File.exists?(path)
+    if File.exists?(full_path)
       return true
     else
-      raise "File not found: #{path}" if raise_exception
+      raise "File not found: #{full_path}" if raise_exception
       return false
     end
   end
@@ -35,15 +35,15 @@ class FileManager
   def self.last_update(target, path)
     exists? target, path
 
-    path = get_file_full_path(target, path)
+    full_path = get_file_full_path(target, path)
 
-    DateTime.parse(File.mtime(path).to_s)
+    DateTime.parse(File.mtime(full_path).to_s)
   end
 
   def self.all_files(target, path="")
-    path = get_file_full_path(target, path)
+    full_path = get_file_full_path(target, path)
 
-    Dir["#{path}/**/*"].select{|v| File.file?(v)}.map{|v| v.gsub!(/^#{path}\//, "")}
+    Dir["#{full_path}/**/*"].select{|v| File.file?(v)}.map{|v| v.gsub!(/^#{full_path}\//, "")}
   end
 
 
@@ -53,17 +53,17 @@ class FileManager
       target.to_s == "client" ? File.join(ConfigManager.get_config(:client_folder), path) : path
     end
 
-    def self.create_folders_for path
-      path = File.dirname(path)
+    def self.create_folders_for full_path
+      full_path = File.dirname(full_path)
 
-      return if File.directory?(path) || ["/", "."].include?(path)
-      create_folders_for(path)
-      Dir::mkdir(path)
+      return if File.directory?(full_path) || ["/", "."].include?(full_path)
+      create_folders_for(full_path)
+      Dir::mkdir(full_path)
     end
 
-    def self.write_file path, file_content
-      create_folders_for path
-      File.open(path, 'w'){|f| f.write(file_content)}
+    def self.write_file full_path, file_content
+      create_folders_for full_path
+      File.open(full_path, 'w'){|f| f.write(file_content)}
     end
 
 end
