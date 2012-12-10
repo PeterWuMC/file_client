@@ -4,9 +4,9 @@ module Files
 
     attr_reader :path, :key
 
-    def initialize path
+    def initialize path, key
       @path = path
-      @key  = Base64.strict_encode64 path
+      @key  = key
     end
 
     def last_update
@@ -17,8 +17,11 @@ module Files
       FileManager.read_from(:client, @path, base64: true)
     end
 
-    def self.find path
-      FileManager.exists?(:client, path, false) ? self.new(path) : false
+    def self.find key
+      path = Base64.strict_decode64 key
+      FileManager.exists?(:client, path, false) ? self.new(path, key) : false
+    rescue
+      false
     end
 
     def self.all
