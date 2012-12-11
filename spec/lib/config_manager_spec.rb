@@ -46,12 +46,12 @@ describe ConfigManager do
 
   end # context get_config
 
-  context 'update_files_version' do
+  context 'update_file_version' do
 
     it 'should create an entry for the file version' do
       ConfigManager.stub(:load_config_file).and_return({})
 
-      ConfigManager.update_files_version("/a/b.rb", "test", "value")
+      ConfigManager.update_file_version("/a/b.rb", "test", "value")
 
       ConfigManager.files_version.should == {"/a/b.rb" => {"test" => "value"}}
     end
@@ -59,12 +59,12 @@ describe ConfigManager do
     it 'should update an entry for the file version' do
       ConfigManager.stub(:load_config_file).and_return({"/a/b.rb" => {"test" => "value"}})
 
-      ConfigManager.update_files_version("/a/b.rb", "test", "nothing")
+      ConfigManager.update_file_version("/a/b.rb", "test", "nothing")
 
       ConfigManager.files_version.should == {"/a/b.rb" => {"test" => "nothing"}}
     end
 
-  end # context update_files_version
+  end # context update_file_version
 
   context 'load_config_file' do
 
@@ -116,7 +116,7 @@ describe ConfigManager do
     end
 
     it 'should return the files_version that is in the internet if its already initialised' do
-      ConfigManager.update_files_version("a.rb", "test", "helloooooo")
+      ConfigManager.update_file_version("a.rb", "test", "helloooooo")
 
       ConfigManager.files_version.should == {"a.rb" => {"test" => "helloooooo"}}
     end

@@ -17,13 +17,23 @@ class ConfigManager
     YAML.load(FileManager.read_from(:full, config_full_path(file_name))) || {}
   end
 
-  def self.update_files_version key, field, value
+  def self.update_file_version key, field, value
+    field = case field.to_s
+      when "client"
+        "local_last_update"
+      when "server"
+        "server_last_update"
+      end
     files_version[key] = {} if !files_version[key]
     files_version[key][field] = value
   end
 
   def self.save_files_version
     FileManager.write_to(:full, config_full_path("version"), files_version.to_yaml, overwrite: true)
+  end
+
+  def self.delete_file_version key
+    @@files_version.delete key
   end
 
   def self.config_full_path file_name

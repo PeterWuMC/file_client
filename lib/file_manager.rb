@@ -21,6 +21,13 @@ class FileManager
     attr[:base64] ? Base64.encode64(file_content) : file_content
   end
 
+  def self.delete(target, path)
+    exists? target, path
+    full_path = get_file_full_path(target, path)
+
+    File.delete(full_path)
+  end
+
   def self.exists?(target, path, raise_exception=true)
     full_path = get_file_full_path(target, path)
 

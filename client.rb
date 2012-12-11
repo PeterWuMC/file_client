@@ -8,24 +8,30 @@ require 'yaml'
 require 'config_manager'
 
 
-def condition server_file, local_file
-  file_version = ConfigManager.files_version[server_file.path]
+def condition server_file, local_file, file_version
   return_value = {}
 
-  return_value[:server] = check_date_time server_file.last_update, file_version["server_last_update"]
-  return_value[:local]  = check_date_time local_file.last_update, file_version["local_last_update"]
+  if !file_version
+    return_value[:server] = server_file ? check_date_time(server_file.last_update, file_version["server_last_update"]) : false
+    return_value[:local]  = local_file ? check_date_time(local_file.last_update, file_version["local_last_update"]) : false
+  end
 
   return_value
 end
 
 def check_date_time date_time1, date_time2
-  return 0 if date_time1 == date_time2
-  return 1 if date_time1 >  date_time2
+  return 0     if date_time1 == date_time2
+  return 1     if date_time1 >  date_time2
   return -1
 end
 
 
 def check(key, exists)
+  local_file   = Files::LocalFile.find(key)
+  server_file  = Files::ServerFile.find(key)
+  file_version = ConfigManager.files_version[key]
+
+  condition_values = condition(server_file, local_file, file_version)
   #         | 1 | delete from version | download to local | upload to server | conflict | upload to server* | delete from server* | never |
   # ---------------------------------------------------------------------------------------------------------------------------------------
   # server  | T | F                   | T                 | F                | T        | F                 | T                   | F     |
@@ -36,11 +42,6 @@ def check(key, exists)
     # ----------------------------------------------------------------------------------------
     # server | match   | greater           | match            | greater  | less*             |
     # local  | match   | match             | greater          | greater  | less*             |
-    local_file  = Files::LocalFile.find(key)
-    server_file = Files::ServerFile.find(key)
-
-    condition_values = condition(server_file, server_key)
-
     if condition_values[:server] == 0 && condition_values[:local] == 0
       # do nothing
     elsif condition_values[:server] == 1 && condition_values[:local] == 0
@@ -53,7 +54,7 @@ def check(key, exists)
       server_file.download
     end
   elsif !exists[:server] && !exists[:local] && exists[:version]
-    ConfigManger.files_version.delete key
+    ConfigManger.delete_file_version key
   elsif exists[:server] && !exists[:local] && !exists[:version]
     server_file.downoad
   elsif !exists[:server] && exists[:local] && !exists[:version]
@@ -64,10 +65,20 @@ def check(key, exists)
     #       | delete | upload to server | delete |
     # --------------------------------------------
     # local | match  | greater          | less   |
+    if condition_values[:client] == 0 || condition_values[:client] == -1
+      FileManager.delete(:client, local_file.path)
+    elsif condition_values[:client] == 1
+      local_file.upload
+    end 
   elsif exists[:server] && !exists[:local] && exists[:version]
     #        | delete | download to local | delete |
     # ----------------------------------------------
     # server | match  | greater           | less   |
+    if condition_values[:server] == 0 || condition_values[:server] == -1
+      server_file.delete
+    elsif condition_value[:server] == 1
+      server_file.download
+    end
   else
     # NEVER WOULD HAVE HAPPENED
   end
