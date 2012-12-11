@@ -49,33 +49,38 @@ def check(key, exists)
     elsif condition_values[:server] == 0 && condition_values[:local] == 1
       local_file.upload
     elsif condition_values[:server] == 1 && condition_values[:local] == 1
-      # conflict
+      raise "conflict"
     else
       server_file.download
     end
   elsif !exists[:server] && !exists[:local] && exists[:version]
     ConfigManger.delete_file_version key
+      ConfigManger.save_files_version
   elsif exists[:server] && !exists[:local] && !exists[:version]
     server_file.downoad
   elsif !exists[:server] && exists[:local] && !exists[:version]
     local_file.upload
   elsif exists[:server] && exists[:local] && !exists[:version]
-    # conflict
+    raise "conflict"
   elsif !exists[:server] && exists[:local] && exists[:version]
     #       | delete | upload to server | delete |
     # --------------------------------------------
     # local | match  | greater          | less   |
     if condition_values[:client] == 0 || condition_values[:client] == -1
       FileManager.delete(:client, local_file.path)
+      ConfigManger.delete_file_version key
+      ConfigManger.save_files_version
     elsif condition_values[:client] == 1
       local_file.upload
-    end 
+    end
   elsif exists[:server] && !exists[:local] && exists[:version]
     #        | delete | download to local | delete |
     # ----------------------------------------------
     # server | match  | greater           | less   |
     if condition_values[:server] == 0 || condition_values[:server] == -1
       server_file.delete
+      ConfigManger.delete_file_version key
+      ConfigManger.save_files_version
     elsif condition_value[:server] == 1
       server_file.download
     end
@@ -86,42 +91,16 @@ end
 
 
 
-
-def old_check server_file
-  key         = server_file.key
-  if ConfigManager.files_version[key] && ConfigManager.files_version[key]["server_last_update"] == server_files.last_update
-    # do nothing
-  elsif !ConfigManager.files_version[key] || (ConfigManager.files_version[key] && ConfigManager.files_version[key]["server_last_update"] < server_file.last_update)
-    # download and replace client file from server
-    server_file.download(true)
-
-    local_file = Files::LocalFile.find(server_file.key)
-    # update the files config with latest server_last_update date from server
-    ConfigManager.update_files_version(key, "server_last_update", server_file.last_update)
-    ConfigManager.update_files_version(key, "local_last_update", local_file.last_update)
-  else
-    raise "Your config seems to be inconsistent with the server"
-  end
-end
-
 def check_all
-  Files::ServerFile.all.each do |file|
-    old_check file
-  end
-  ConfigManager.save_files_version
-end
+  server_files  = Files::ServerFile.all.map(&:key)
+  local_files   = Files::LocalFile.all.map(&:key)
+  files_version = ConfigManager.files_version.keys
 
-def check_server_file path
-  begin
-    server_file = Files::ServerFile.find(path)
-    if server_file["last_update"] == ConfigManager.files_version[path]["server_last_update"]
-      # your record is correct
-    else
-      # there are newer version on server
-    end
-  rescue ActiveResource::ResourceNotFound
-    # file not on server
-    # other client deleted the files from server?
+  all = server_files | local_files | files_version
+
+  while all.size > 0
+    key = all.pop
+    check(key, {server: server_files[key], local: local_files[key], version: files_version[key]})
   end
 end
 
