@@ -23,6 +23,8 @@ class ConfigManager
         "local_last_update"
       when "server"
         "server_last_update"
+      else
+        field
       end
     files_version[key] = {} if !files_version[key]
     files_version[key][field] = value

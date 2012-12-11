@@ -64,6 +64,22 @@ describe ConfigManager do
       ConfigManager.files_version.should == {"/a/b.rb" => {"test" => "nothing"}}
     end
 
+    it 'should update the local_last_update if it specify as :client' do
+      ConfigManager.stub(:load_config_file).and_return({})
+
+      ConfigManager.update_file_version("/a/b.rb", :client, "value")
+
+      ConfigManager.files_version.should == {"/a/b.rb" => {"local_last_update" => "value"}}
+    end
+
+    it 'should update the local_last_update if it specify as :server' do
+      ConfigManager.stub(:load_config_file).and_return({})
+
+      ConfigManager.update_file_version("/a/b.rb", :server, "value")
+
+      ConfigManager.files_version.should == {"/a/b.rb" => {"server_last_update" => "value"}}
+    end
+
   end # context update_file_version
 
   context 'load_config_file' do

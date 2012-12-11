@@ -32,8 +32,10 @@ module Files
       server_file = Files::ServerFile.find(self.key)
       server_file.update_attribute(:file_content, FileManager.read_from(:client, self.path, base64: true))
       server_file = Files::ServerFile.find(self.key)
-      ConfigManager.update_file_version, self.key, :client, self.last_update
-      ConfigManager.update_file_version, server_file.key, :server, server_file.last_update
+      ConfigManager.update_file_version self.key, :client, self.last_update
+      ConfigManager.update_file_version server_file.key, :server, server_file.last_update
+
+      ConfigManager.save_files_version
     end
 
   end
