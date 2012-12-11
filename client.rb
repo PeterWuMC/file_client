@@ -11,7 +11,7 @@ require 'config_manager'
 def condition server_file, local_file, file_version
   return_value = {}
 
-  if !file_version
+  if file_version
     return_value[:server] = server_file ? check_date_time(server_file.last_update, file_version["server_last_update"]) : false
     return_value[:local]  = local_file ? check_date_time(local_file.last_update, file_version["local_last_update"]) : false
   end
@@ -30,6 +30,8 @@ def check(key, exists)
   local_file   = Files::LocalFile.find(key)
   server_file  = Files::ServerFile.find(key)
   file_version = ConfigManager.files_version[key]
+
+  puts Base64.strict_decode64(key)
 
   condition_values = condition(server_file, local_file, file_version)
   #         | 1 | delete from version | download to local | upload to server | conflict | upload to server* | delete from server* | never |
@@ -57,7 +59,7 @@ def check(key, exists)
     ConfigManger.delete_file_version key
       ConfigManger.save_files_version
   elsif exists[:server] && !exists[:local] && !exists[:version]
-    server_file.downoad
+    server_file.download
   elsif !exists[:server] && exists[:local] && !exists[:version]
     local_file.upload
   elsif exists[:server] && exists[:local] && !exists[:version]
@@ -100,7 +102,7 @@ def check_all
 
   while all.size > 0
     key = all.pop
-    check(key, {server: server_files[key], local: local_files[key], version: files_version[key]})
+    check(key, {server: server_files.include?(key), local: local_files.include?(key), version: files_version.include?(key)})
   end
 end
 
