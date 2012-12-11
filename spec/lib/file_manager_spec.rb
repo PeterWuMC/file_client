@@ -103,7 +103,7 @@ describe FileManager do
     end
 
     it 'should return the correct Last Update time stamp' do
-      File.should_receive(:mtime).once.with(file).and_return(Time.new(2012,1,1))
+      File.should_receive(:mtime).once.with(file).and_return(Time.new(2012,1,1,0,0,0,0).utc)
 
       FileManager.last_update(:cllient, file).should == DateTime.new(2012,1,1)
     end

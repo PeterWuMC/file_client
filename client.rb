@@ -46,18 +46,18 @@ def check(key, exists)
     elsif condition_values[:server] == 1 && condition_values[:local] == 0
       server_file.download
     elsif condition_values[:server] == 0 && condition_values[:local] == 1
-      # upload to server
+      local_file.upload
     elsif condition_values[:server] == 1 && condition_values[:local] == 1
       # conflict
     else
       server_file.download
     end
   elsif !exists[:server] && !exists[:local] && exists[:version]
-    # delete from version
+    ConfigManger.files_version.delete key
   elsif exists[:server] && !exists[:local] && !exists[:version]
-    # download to local
+    server_file.downoad
   elsif !exists[:server] && exists[:local] && !exists[:version]
-    # upload to server
+    local_file.upload
   elsif exists[:server] && exists[:local] && !exists[:version]
     # conflict
   elsif !exists[:server] && exists[:local] && exists[:version]

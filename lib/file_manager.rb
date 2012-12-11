@@ -37,7 +37,7 @@ class FileManager
 
     full_path = get_file_full_path(target, path)
 
-    DateTime.parse(File.mtime(full_path).to_s)
+    DateTime.parse(File.mtime(full_path).utc.to_s)
   end
 
   def self.all_files(target, path="")

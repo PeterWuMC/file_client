@@ -56,7 +56,7 @@ describe Files::LocalFile do
     end
 
     it 'should be able to return the "last update" time stamp for the file' do
-      FileManager.stub(:last_update).and_return(Time.new(2012,1,1))
+      FileManager.stub(:last_update).and_return(Time.new(2012,1,1,0,0,0,0).utc)
       file = Files::LocalFile.find(key)
 
       file.last_update.should == DateTime.new(2012,1,1)

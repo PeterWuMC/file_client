@@ -10,11 +10,11 @@ module Files
     end
 
     def last_update
-      FileManager.last_update(:client, @path)
+      FileManager.last_update(:client, self.path)
     end
 
     def file_content
-      FileManager.read_from(:client, @path, base64: true)
+      FileManager.read_from(:client, self.path, base64: true)
     end
 
     def self.find key
@@ -26,6 +26,11 @@ module Files
 
     def self.all
       FileManager.all_files(:client).map {|path| new(path, Base64.strict_encode64(path))}
+    end
+
+    def upload
+      server_file = Files::ServerFile.find(self.key)
+      server_file.update_attribute(:file_content, FileManager.read_from(:client, self.path, base64: true))
     end
 
   end
