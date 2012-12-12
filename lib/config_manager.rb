@@ -19,7 +19,7 @@ class ConfigManager
 
   def self.update_file_version key, field, value
     field = case field.to_s
-      when "client"
+      when "local"
         "local_last_update"
       when "server"
         "server_last_update"

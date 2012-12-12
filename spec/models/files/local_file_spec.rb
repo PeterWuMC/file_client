@@ -36,7 +36,7 @@ describe Files::LocalFile do
 
     context 'all' do
 
-      it 'should return all the files in the client folder' do
+      it 'should return all the files in the local folder' do
         FileManager.should_receive(:all_files).once.and_return(["path1", "path2"])
         Files::LocalFile.all.each do |f|
           f.should be_instance_of Files::LocalFile

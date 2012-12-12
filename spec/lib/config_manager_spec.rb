@@ -20,7 +20,7 @@ describe ConfigManager do
   context 'save_files_version' do
 
     it 'should save the "files version" into version.yml in YAML format' do
-      file_version = {"abc.rb" => {"server_last_update" => DateTime.new(2012, 1, 1), "client_last_update" => DateTime.new(2012,2,2)}}
+      file_version = {"abc.rb" => {"server_last_update" => DateTime.new(2012, 1, 1), "local_last_update" => DateTime.new(2012,2,2)}}
       version_path = "/a/b/c.yml"
 
       ConfigManager.stub(:files_version).and_return(file_version)
@@ -64,10 +64,10 @@ describe ConfigManager do
       ConfigManager.files_version.should == {"/a/b.rb" => {"test" => "nothing"}}
     end
 
-    it 'should update the local_last_update if it specify as :client' do
+    it 'should update the local_last_update if it specify as :local' do
       ConfigManager.stub(:load_config_file).and_return({})
 
-      ConfigManager.update_file_version("/a/b.rb", :client, "value")
+      ConfigManager.update_file_version("/a/b.rb", :local, "value")
 
       ConfigManager.files_version.should == {"/a/b.rb" => {"local_last_update" => "value"}}
     end

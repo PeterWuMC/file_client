@@ -43,13 +43,13 @@ describe FileManager do
 
   context 'get_file_full_path' do
 
-    it 'should append the client base folder if the target is client' do
-      ConfigManager.should_receive(:get_config).once.with(:client_folder).and_return("/a/b/c")
+    it 'should append the local base folder if the target is local' do
+      ConfigManager.should_receive(:get_config).once.with(:local_folder).and_return("/a/b/c")
 
-      FileManager.get_file_full_path(:client, "d.rb").should == "/a/b/c/d.rb"
+      FileManager.get_file_full_path(:local, "d.rb").should == "/a/b/c/d.rb"
     end
 
-    it 'should return the same path if the target is not client' do
+    it 'should return the same path if the target is not local' do
       ConfigManager.should_not_receive(:get_config)
 
       FileManager.get_file_full_path(:full, "d.rb").should == "d.rb"
@@ -122,13 +122,13 @@ describe FileManager do
     it 'should return the exact content of the file' do
       File.should_receive(:read).once.with(file).and_return("TEST")
 
-      FileManager.read_from(:client, file).should == "TEST"
+      FileManager.read_from(:local, file).should == "TEST"
     end
 
     it 'should encode the content using Base64 if required' do
       File.should_receive(:read).once.with(file).and_return("TEST")
 
-      FileManager.read_from(:client, file, base64: true).should == Base64.encode64("TEST")
+      FileManager.read_from(:local, file, base64: true).should == Base64.encode64("TEST")
     end
 
   end # context read_from
@@ -146,35 +146,35 @@ describe FileManager do
       FileManager.stub(:exists?).and_return(false)
       FileManager.should_receive(:write_file).with(file, file_content).once
 
-      FileManager.write_to(:client, file, file_content)
+      FileManager.write_to(:local, file, file_content)
     end
 
     it 'should overwrite the file if the overwrite flag is true' do
       FileManager.stub(:exists?).and_return(true)
       FileManager.should_receive(:write_file).with(file, file_content).once
 
-      expect { FileManager.write_to(:client, file, file_content, overwrite: true) }.to_not raise_error
+      expect { FileManager.write_to(:local, file, file_content, overwrite: true) }.to_not raise_error
     end
 
     it 'should raise an exception if file already exists' do
       FileManager.stub(:exists?).and_return(true)
       FileManager.should_not_receive(:write_file)
 
-      expect { FileManager.write_to(:client, file, file_content) }.to raise_error("File already exists: #{file}")
+      expect { FileManager.write_to(:local, file, file_content) }.to raise_error("File already exists: #{file}")
     end
 
     it 'should encode the content to base64 if the base64 flag is true' do
       FileManager.stub(:exists?).and_return(false)
       FileManager.should_receive(:write_file).with(file, file_content).once
 
-      FileManager.write_to(:client, file, Base64.encode64(file_content), base64: true)
+      FileManager.write_to(:local, file, Base64.encode64(file_content), base64: true)
     end
 
     it 'should return the absolute path where the file are saved' do
       FileManager.stub(:exists?).and_return(false)
       FileManager.should_receive(:write_file).with(file, file_content).once
 
-      FileManager.write_to(:client, file, file_content).should == file
+      FileManager.write_to(:local, file, file_content).should == file
     end
 
   end # context write_to

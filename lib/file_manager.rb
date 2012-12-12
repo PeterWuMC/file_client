@@ -53,11 +53,19 @@ class FileManager
     Dir["#{full_path}/**/*"].select{|v| File.file?(v)}.map{|v| v.gsub!(/^#{full_path}\//, "")}
   end
 
+  def key_for path
+    Base64.strict_encode64 path
+  end
+
+  def path_for target, key
+    full_path = get_file_full_path(target, Base64.strict_decode64(key))
+  end
+
 
   private
 
     def self.get_file_full_path target, path
-      target.to_s == "client" ? File.join(ConfigManager.get_config(:client_folder), path) : path
+      target.to_s == "local" ? File.join(ConfigManager.get_config(:local_folder), path) : path
     end
 
     def self.create_folders_for full_path

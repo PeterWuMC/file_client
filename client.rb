@@ -31,7 +31,7 @@ def check(key, exists)
   server_file  = Files::ServerFile.find(key)
   file_version = ConfigManager.files_version[key]
 
-  puts "#{Base64.strict_decode64(key)}"
+  Log.this(FileManager.path_for(key))
 
   condition_values = condition(server_file, local_file, file_version)
   #         | 1 | delete from version | download to local | upload to server | conflict | upload to server* | delete from server* | never |
@@ -65,7 +65,6 @@ def check(key, exists)
   elsif exists[:server] && exists[:local] && !exists[:version]
     raise "conflict"
   elsif !exists[:server] && exists[:local] && exists[:version]
-    puts condition_values
     #       | delete | upload to server | delete |
     # --------------------------------------------
     # local | match  | greater          | less   |
@@ -73,7 +72,7 @@ def check(key, exists)
       FileManager.delete(:client, local_file.path)
       ConfigManager.delete_file_version key
       ConfigManager.save_files_version
-      puts "  [DELETED] #{Base64.strict_decode64(key)}"
+      Log.this(1, "[DELETED] #{FileManager.path_for(key)}")
     elsif condition_values[:local] == 1
       local_file.upload
     end
@@ -85,7 +84,7 @@ def check(key, exists)
       Files::ServerFile.delete(server_file.key)
       ConfigManager.delete_file_version key
       ConfigManager.save_files_version
-      puts "  [DELETED] #{Base64.strict_decode64(key)}"
+      Log.this(1, "[DELETED] #{FileManager.path_for(key)}")
     elsif condition_value[:server] == 1
       server_file.download
     end
@@ -110,16 +109,14 @@ def check_all
 end
 
 def monitor_files
-  Listen.to(ConfigManager.get_config(:client_folder)) do |modified, added, removed|
-
+  Listen.to(ConfigManager.get_config(:local_folder)) do |modified, added, removed|
     if !modified.empty? || !added.empty? || !removed.empty?
-      file = modified.first || added.first || removed.first
+      path = modified.first || added.first || removed.first
 
-      file.gsub!(%r{^#{ConfigManager.get_config(:client_folder)}/}, '')
-      key = Base64.strict_encode64(file)
+      path.gsub!(%r{^#{ConfigManager.get_config(:local_folder)}/}, '')
+      key = FileManager.key_for(path)
       check(key, {server: Files::ServerFile.find(key), local: Files::LocalFile.find(key), version: ConfigManager.files_version[key]})
     end
-
   end
 end
 
