@@ -9,6 +9,7 @@ describe FileManager do
     let(:path) { "/a/b/c.rb" }
 
     before(:each) do
+      File.unstub(:open)
       File.should_receive(:open).with(path, 'w').and_yield(file)
     end
 

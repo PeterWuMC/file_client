@@ -31,7 +31,7 @@ def check(key, exists)
   server_file  = Files::ServerFile.find(key)
   file_version = ConfigManager.files_version[key]
 
-  Log.this(FileManager.path_for(key))
+  Log.this(FileManager.path_for(:local, key))
 
   condition_values = condition(server_file, local_file, file_version)
   #         | 1 | delete from version | download to local | upload to server | conflict | upload to server* | delete from server* | never |
@@ -72,7 +72,7 @@ def check(key, exists)
       FileManager.delete(:client, local_file.path)
       ConfigManager.delete_file_version key
       ConfigManager.save_files_version
-      Log.this(1, "[DELETED] #{FileManager.path_for(key)}")
+      Log.this(1, "[DELETED] #{FileManager.path_for(:local, key)}")
     elsif condition_values[:local] == 1
       local_file.upload
     end
@@ -84,7 +84,7 @@ def check(key, exists)
       Files::ServerFile.delete(server_file.key)
       ConfigManager.delete_file_version key
       ConfigManager.save_files_version
-      Log.this(1, "[DELETED] #{FileManager.path_for(key)}")
+      Log.this(1, "[DELETED] #{FileManager.path_for(:local, key)}")
     elsif condition_value[:server] == 1
       server_file.download
     end

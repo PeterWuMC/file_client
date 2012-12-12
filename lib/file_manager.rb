@@ -53,11 +53,11 @@ class FileManager
     Dir["#{full_path}/**/*"].select{|v| File.file?(v)}.map{|v| v.gsub!(/^#{full_path}\//, "")}
   end
 
-  def key_for path
+  def self.key_for path
     Base64.strict_encode64 path
   end
 
-  def path_for target, key
+  def self.path_for target, key
     full_path = get_file_full_path(target, Base64.strict_decode64(key))
   end
 
