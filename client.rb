@@ -31,7 +31,7 @@ def check(key, exists)
   server_file  = Files::ServerFile.find(key)
   file_version = ConfigManager.files_version[key]
 
-  puts Base64.strict_decode64(key)
+  puts "#{Base64.strict_decode64(key)}"
 
   condition_values = condition(server_file, local_file, file_version)
   #         | 1 | delete from version | download to local | upload to server | conflict | upload to server* | delete from server* | never |
@@ -56,8 +56,8 @@ def check(key, exists)
       server_file.download
     end
   elsif !exists[:server] && !exists[:local] && exists[:version]
-    ConfigManger.delete_file_version key
-      ConfigManger.save_files_version
+    ConfigManager.delete_file_version key
+      ConfigManager.save_files_version
   elsif exists[:server] && !exists[:local] && !exists[:version]
     server_file.download
   elsif !exists[:server] && exists[:local] && !exists[:version]
@@ -65,14 +65,16 @@ def check(key, exists)
   elsif exists[:server] && exists[:local] && !exists[:version]
     raise "conflict"
   elsif !exists[:server] && exists[:local] && exists[:version]
+    puts condition_values
     #       | delete | upload to server | delete |
     # --------------------------------------------
     # local | match  | greater          | less   |
-    if condition_values[:client] == 0 || condition_values[:client] == -1
+    if condition_values[:local] == 0 || condition_values[:local] == -1
       FileManager.delete(:client, local_file.path)
-      ConfigManger.delete_file_version key
-      ConfigManger.save_files_version
-    elsif condition_values[:client] == 1
+      ConfigManager.delete_file_version key
+      ConfigManager.save_files_version
+      puts "  [DELETED] #{Base64.strict_decode64(key)}"
+    elsif condition_values[:local] == 1
       local_file.upload
     end
   elsif exists[:server] && !exists[:local] && exists[:version]
@@ -80,9 +82,10 @@ def check(key, exists)
     # ----------------------------------------------
     # server | match  | greater           | less   |
     if condition_values[:server] == 0 || condition_values[:server] == -1
-      server_file.delete
-      ConfigManger.delete_file_version key
-      ConfigManger.save_files_version
+      Files::ServerFile.delete(server_file.key)
+      ConfigManager.delete_file_version key
+      ConfigManager.save_files_version
+      puts "  [DELETED] #{Base64.strict_decode64(key)}"
     elsif condition_value[:server] == 1
       server_file.download
     end

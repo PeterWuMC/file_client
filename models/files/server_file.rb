@@ -12,6 +12,10 @@ module Files
       false
     end
 
+    def last_update
+      DateTime.parse attributes[:last_update].to_s
+    end
+
     def download overwrite=false
       FileManager.write_to(:client, self.path, self.get(:download)["file_content"], {overwrite: true, base64: true})
       local_file = Files::LocalFile.find self.key
@@ -19,10 +23,7 @@ module Files
       ConfigManager.update_file_version local_file.key, :client, local_file.last_update
 
       ConfigManager.save_files_version
-    end
-
-    def last_update
-      DateTime.parse attributes[:last_update].to_s
+      puts "  [DOWNLOADED] #{self.path}"
     end
 
   end # end of class ServerFile

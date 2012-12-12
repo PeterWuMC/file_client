@@ -36,6 +36,8 @@ module Files
       ConfigManager.update_file_version server_file.key, :server, server_file.last_update
 
       ConfigManager.save_files_version
+
+      puts "  [UPLOADED] #{self.path}"
     end
 
   end
