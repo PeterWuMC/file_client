@@ -110,22 +110,18 @@ def check_all
 end
 
 def monitor_files
-  Thread.start do
-    Listen.to("/Users/pwu/Workarea/tmp/abc") do |modified, added, removed|
-      if !modified.empty?
-        puts "this file is modified: #{modified}"
-      end
+  Listen.to(ConfigManager.get_config(:client_folder)) do |modified, added, removed|
 
-      if !added.empty?
-        puts "this file is added: #{added}"
-      end
+    if !modified.empty? || !added.empty? || !removed.empty?
+      file = modified.first || added.first || removed.first
 
-      if !removed.empty?
-        puts "this file is removed: #{removed}"
-      end
+      file.gsub!(%r{^#{ConfigManager.get_config(:client_folder)}/}, '')
+      key = Base64.strict_encode64(file)
+      check(key, {server: Files::ServerFile.find(key), local: Files::LocalFile.find(key), version: ConfigManager.files_version[key]})
     end
+
   end
 end
 
 check_all
-
+monitor_files
